@@ -1,46 +1,21 @@
 {
   "name": "aifais-mcp-server",
-  "version": "1.0.0",
-  "description": "Document intelligence MCP server with X402 payments on Solana",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "1.1.0",
+  "description": "Standalone AIFAIS MCP Server with X402 Payment Support",
+  "main": "build/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
-  },
-  "keywords": [
-    "mcp",
-    "mcp-server",
-    "ai-agents",
-    "x402",
-    "solana",
-    "document-processing",
-    "invoice-extraction",
-    "ocr",
-    "autonomous-agents",
-    "headless-api"
-  ],
-  "author": "AIFAIS <info@aifais.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/AIFAIS/aifais-mcp-server"
-  },
-  "homepage": "https://aifais.com/developers",
-  "bugs": {
-    "url": "https://github.com/AIFAIS/aifais-mcp-server/issues"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "start": "node build/index.js",
+    "dev": "tsc --watch"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "@solana/web3.js": "^1.87.0"
+    "@modelcontextprotocol/sdk": "^1.24.3",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
-    "ts-node": "^10.9.0"
+    "typescript": "^5.3.0"
   }
 }
