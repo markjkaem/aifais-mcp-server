@@ -2,9 +2,7 @@
 
 De officiële Model Context Protocol (MCP) server voor AIFAIS. Geef je AI agents (zoals Claude of Cursor) direct toegang tot specialistische tools voor de Nederlandse markt.
 
-## 🚀 Quick Start (via `npx`)
-
-De makkelijkste manier om de server te gebruiken is via `npx`. Je hoeft dan niets lokaal te installeren of te builden.
+## 🚀 Quick Start
 
 ### Voor Claude Desktop
 Voeg dit toe aan je `claude_desktop_config.json`:
@@ -28,68 +26,59 @@ Voeg dit toe aan je `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ Lokale Ontwikkeling
-
-Als je de server wilt aanpassen of lokaal wilt draaien:
-
-1. **Installatie**:
-   ```bash
-   npm install
-   ```
-
-2. **Configuratie**:
-   Maak een `.env` bestand aan op basis van `.env.example`:
-   ```env
-   AIFAIS_API_URL=https://aifais.com/api/v1/scan
-   DEBUG=true
-   ```
-
-3. **Builden**:
-   ```bash
-   npm run build
-   ```
-
-4. **Starten**:
-   ```bash
-   npm start
-   ```
-
----
-
 ## 💎 Beschikbare Tools
 
 ### `scan_invoice`
-Scant een factuur of bonnetje (PDF/JPG/PNG) en extraheert gestructureerde data via AI.
+Scant een factuur/bonnetje en extraheert gestructureerde data via AI.
 
 **Parameters:**
-- `invoiceBase64` (required): De base64 string van het bestand.
-- `mimeType` (required): `application/pdf`, `image/jpeg` of `image/png`.
-- `signature` (optional): De Solana transactie signature als bewijs van betaling.
+- `invoiceBase64 (required)`
+- `mimeType (required)`
+- `signature (optional)`
+
 
 ---
 
-## 💳 Betalingen (X402 Protocol)
+## 💳 Pricing
 
-Deze server maakt gebruik van het **X402 (Payment Required)** protocol. Dit betekent:
+Elke API call kost **0.001 SOL** via het X402 protocol.
+
+**Hoe het werkt:**
 1. De agent doet een verzoek zonder `signature`.
-2. De server antwoordt met een `402 Error` en geeft een Solana wallet adres + bedrag (0.001 SOL).
+2. De server antwoordt met een `402 Error` en geeft een Solana wallet adres + bedrag.
 3. Jij (of je agent) betaalt de transactie.
 4. De agent stuurt het verzoek opnieuw, maar nu met de `signature`.
 
-Dit zorgt voor een frictieloze pay-per-call ervaring zonder dat je een account of API key nodig hebt.
+Wallet: `Bqpo3emFG46VGLX4korYoeta3a317pWbR2DMbWnFpZ8c`
+
+---
+
+## 🛠️ Lokale Ontwikkeling
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+Configuratie via `.env`:
+```env
+AIFAIS_API_URL=https://aifais.com/api/v1/scan
+DEBUG=true
+```
 
 ---
 
 ## 🪵 Debugging
 
-Als je problemen ervaart, kun je `DEBUG=true` aanzetten in je environment. Logs worden naar `stderr` geschreven zodat ze de MCP communicatie niet verstoren.
-
-In Claude Desktop kun je de logs bekijken via:
-`~/Library/Logs/Claude/mcp.log` (macOS)
-`%APPDATA%/Claude/logs/mcp.log` (Windows)
+Zet `DEBUG=true` aan in je environment. Logs worden naar `stderr` geschreven.
 
 ---
 
 ## 📝 Licentie
 
 MIT © AIFAIS
+
+---
+
+*Auto-generated from website docs. Version 1.2.0*
