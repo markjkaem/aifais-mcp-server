@@ -56,20 +56,20 @@ Genereer een PDF offerte op basis van JSON data.
 - `items (array)`
 - `validUntil (optional)`
 
-### `check_contract` (0.01 SOL)
+### `check_contract` (0.001 SOL)
 Analyseer een juridisch contract op risico's.
 
 **Parameters:**
 - `contractBase64 (required)`
-- `signature (required, 0.01 SOL)`
+- `signature (required, 0.001 SOL)`
 
-### `generate_terms` (0.005 SOL)
+### `generate_terms` (0.001 SOL)
 Genereer algemene voorwaarden op maat.
 
 **Parameters:**
 - `companyName`
 - `companyType`
-- `signature (required, 0.005 SOL)`
+- `signature (required, 0.001 SOL)`
 
 
 ---
