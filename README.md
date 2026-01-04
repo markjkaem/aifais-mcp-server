@@ -30,13 +30,46 @@ Voeg dit toe aan je `claude_desktop_config.json`:
 
 ## 💎 Beschikbare Tools
 
-### `scan_invoice`
+### `scan_invoice` (0.001 SOL)
 Scant een factuur/bonnetje en extraheert gestructureerde data via AI.
 
 **Parameters:**
 - `invoiceBase64 (required)`
 - `mimeType (required)`
-- `signature (optional)`
+- `signature (optional, 0.001 SOL)`
+
+### `create_invoice` (Gratis)
+Genereer een PDF factuur op basis van JSON data.
+
+**Parameters:**
+- `ownName`
+- `clientName`
+- `items (array)`
+
+### `generate_quote` (Gratis)
+Genereer een PDF offerte op basis van JSON data.
+
+**Parameters:**
+- `companyName`
+- `clientName`
+- `projectTitle`
+- `items (array)`
+- `validUntil (optional)`
+
+### `check_contract` (0.01 SOL)
+Analyseer een juridisch contract op risico's.
+
+**Parameters:**
+- `contractBase64 (required)`
+- `signature (required, 0.01 SOL)`
+
+### `generate_terms` (0.005 SOL)
+Genereer algemene voorwaarden op maat.
+
+**Parameters:**
+- `companyName`
+- `companyType`
+- `signature (required, 0.005 SOL)`
 
 
 ---
@@ -50,7 +83,8 @@ Je kunt de actuele tool-definities en prijzen altijd ophalen via ons discovery e
 
 ## 💳 Pricing
 
-Elke API call kost **0.001 SOL** via het X402 protocol.
+Prijzen zijn **Pay-per-Tool** via het X402 protocol.
+Sommige tools zijn gratis (factuur/offerte genereren), anderen kosten een klein bedrag in SOL.
 
 **Hoe het werkt:**
 1. De agent doet een verzoek zonder `signature`.
