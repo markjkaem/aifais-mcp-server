@@ -41,6 +41,13 @@ Scant een factuur/bonnetje en extraheert gestructureerde data via AI.
 
 ---
 
+## 🔍 Discovery API
+
+Je kunt de actuele tool-definities en prijzen altijd ophalen via ons discovery endpoint:
+`https://aifais.com/api/mcp`
+
+---
+
 ## 💳 Pricing
 
 Elke API call kost **0.001 SOL** via het X402 protocol.
