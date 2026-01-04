@@ -1,39 +1,34 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-    CallToolRequestSchema,
-    ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
-import axios, { AxiosError } from "axios";
+import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
+import axios from "axios";
 import dotenv from "dotenv";
-
 dotenv.config();
-
 const API_URL = process.env.AIFAIS_API_URL || "https://aifais.com/api/v1/scan";
 const DEBUG = process.env.DEBUG === "true";
-
 /**
  * Enhanced Logging Utility
  */
 const log = {
-    info: (msg: string, ...args: any[]) => console.error(`[INFO] ${msg}`, ...args),
-    error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args),
-    debug: (msg: string, ...args: any[]) => {
-        if (DEBUG) console.error(`[DEBUG] ${msg}`, ...args);
+    info: (msg, ...args) => console.error(`[INFO] ${msg}`, ...args),
+    error: (msg, ...args) => console.error(`[ERROR] ${msg}`, ...args),
+    debug: (msg, ...args) => {
+        if (DEBUG)
+            console.error(`[DEBUG] ${msg}`, ...args);
     }
 };
-
 /**
  * Retry helper for transient network errors
  */
-async function axiosWithRetry(url: string, data: any, retries = 3, backoff = 1000) {
+async function axiosWithRetry(url, data, retries = 3, backoff = 1000) {
     for (let i = 0; i < retries; i++) {
         try {
             return await axios.post(url, data, { validateStatus: () => true });
-        } catch (error: any) {
+        }
+        catch (error) {
             const isTransient = !error.response || (error.response.status >= 500);
-            if (i === retries - 1 || !isTransient) throw error;
-
+            if (i === retries - 1 || !isTransient)
+                throw error;
             const delay = backoff * Math.pow(2, i);
             log.info(`Transient error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
@@ -41,19 +36,14 @@ async function axiosWithRetry(url: string, data: any, retries = 3, backoff = 100
     }
     throw new Error("Max retries reached");
 }
-
-const server = new Server(
-    {
-        name: "aifais-mcp-server",
-        version: "1.2.0",
+const server = new Server({
+    name: "aifais-mcp-server",
+    version: "1.2.0",
+}, {
+    capabilities: {
+        tools: {},
     },
-    {
-        capabilities: {
-            tools: {},
-        },
-    }
-);
-
+});
 /**
  * List available tools
  */
@@ -87,39 +77,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         ],
     };
 });
-
 /**
  * Handle tool calls
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-
     log.info(`Tool call: ${name}`);
     log.debug("Arguments:", JSON.stringify(args, null, 2));
-
     if (name === "scan_invoice") {
-        const { invoiceBase64, mimeType, signature } = args as {
-            invoiceBase64: string;
-            mimeType: string;
-            signature?: string;
-        };
-
+        const { invoiceBase64, mimeType, signature } = args;
         if (!invoiceBase64) {
             return {
                 isError: true,
                 content: [{ type: "text", text: "Error: invoiceBase64 is required" }]
             };
         }
-
         try {
             const response = await axiosWithRetry(API_URL, {
                 invoiceBase64,
                 mimeType,
                 signature: signature || "",
             });
-
             log.debug(`API Response Status: ${response.status}`);
-
             // Handle Success
             if (response.status === 200) {
                 log.info("Scan successful");
@@ -132,7 +111,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     ],
                 };
             }
-
             // Handle X402 Payment Required
             if (response.status === 402) {
                 const offer = response.data.details || response.data.x402_offer || response.data;
@@ -147,7 +125,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     ],
                 };
             }
-
             // Handle 400 Unreadable or Invalid
             if (response.status === 400) {
                 log.error("Invalid request or unreadable document");
@@ -161,7 +138,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     ],
                 };
             }
-
             // Handle other errors
             log.error(`API Error ${response.status}`, response.data);
             return {
@@ -173,7 +149,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     },
                 ],
             };
-        } catch (error: any) {
+        }
+        catch (error) {
             log.error("Connection error", error.message);
             return {
                 isError: true,
@@ -186,10 +163,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             };
         }
     }
-
     throw new Error(`Tool not found: ${name}`);
 });
-
 /**
  * Start the server
  */
@@ -198,9 +173,7 @@ async function main() {
     await server.connect(transport);
     log.info(`AIFAIS MCP Server v1.2.0 running on stdio (API: ${API_URL})`);
 }
-
 main().catch((error) => {
     log.error("Fatal error in main():", error);
     process.exit(1);
 });
-

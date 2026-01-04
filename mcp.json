@@ -3,7 +3,7 @@
   "name": "aifais",
   "displayName": "AIFAIS Document Intelligence",
   "description": "Headless document processing tools for AI agents. Invoice extraction with X402 payments on Solana.",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "author": {
     "name": "AIFAIS",
     "email": "info@aifais.com",
@@ -21,7 +21,7 @@
   "tools": [
     {
       "name": "scan_invoice",
-      "description": "Extract structured data from invoices (PDF, JPG, PNG). Returns vendor, amounts, VAT, line items, and KvK numbers. Requires 0.001 SOL payment.",
+      "description": "Extracts structured data from Dutch invoices/receipts using AI. Returns deep insights like vendor info, VAT breakdown, KvK numbers, and line items. AI-agents only.",
       "pricing": {
         "amount": 0.001,
         "currency": "SOL",
@@ -45,13 +45,12 @@
           },
           "signature": {
             "type": "string",
-            "description": "Solana transaction signature as payment proof"
+            "description": "Solana transaction signature if already paid. If not provided, you will receive a 402 Payment Required error with instructions."
           }
         },
         "required": [
           "invoiceBase64",
-          "mimeType",
-          "signature"
+          "mimeType"
         ]
       }
     }
@@ -60,19 +59,17 @@
     "protocol": "x402",
     "network": "solana-mainnet",
     "acceptedCurrencies": [
-      "SOL",
-      "USDC"
+      "SOL"
     ],
     "wallet": "Bqpo3emFG46VGLX4korYoeta3a317pWbR2DMbWnFpZ8c"
   },
   "tags": [
-    "document-processing",
-    "invoice",
+    "document-intelligence",
+    "invoice-parsing",
     "ocr",
-    "dutch",
-    "kvk",
+    "dutch-market",
+    "kvk-lookup",
     "x402",
-    "solana",
-    "paid"
+    "solana-payments"
   ]
 }
