@@ -1,0 +1,5 @@
+# Mark build output as generated (excluded from GitHub language stats)
+build/** linguist-generated=true
+
+# Ensure TypeScript is detected as the primary language
+*.ts linguist-detectable=true
