@@ -1,3 +1,3 @@
 # All JavaScript in this repo is compiled TypeScript output
-*.js linguist-generated
-build/index.js linguist-generated
+*.js linguist-generated=true
+build/index.js linguist-generated=true
