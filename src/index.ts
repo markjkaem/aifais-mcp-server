@@ -17,9 +17,9 @@ const DEBUG = process.env.DEBUG === "true";
  * Enhanced Logging Utility
  */
 const log = {
-    info: (msg: string, ...args: any[]) => console.error(`[INFO] ${msg}`, ...args),
-    error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args),
-    debug: (msg: string, ...args: any[]) => {
+    info: (msg: string, ...args: unknown[]) => console.error(`[INFO] ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) => console.error(`[ERROR] ${msg}`, ...args),
+    debug: (msg: string, ...args: unknown[]) => {
         if (DEBUG) console.error(`[DEBUG] ${msg}`, ...args);
     }
 };
@@ -225,18 +225,95 @@ const TOOLS = {
             },
             required: ["ownName", "clientName", "items"],
         }
+    },
+    price_calculator: {
+        name: "price_calculator",
+        description: "Calculates optimal product pricing based on costs, margins, and market analysis with AI-powered insights. Free tool.",
+        endpoint: "/finance/price-calculator",
+        inputSchema: {
+            type: "object",
+            properties: {
+                productName: { type: "string", description: "Name of the product" },
+                costPrice: { type: "number", description: "Cost price per unit" },
+                targetMargin: { type: "number", description: "Target profit margin percentage (0-100)" },
+                competitorPrices: { type: "array", items: { type: "number" }, description: "Array of competitor prices for analysis" },
+                marketPosition: { type: "string", enum: ["budget", "mid-range", "premium"], description: "Market positioning strategy" },
+                includeVAT: { type: "boolean", description: "Include VAT in calculations" },
+                vatRate: { type: "number", description: "VAT percentage (default 21%)" },
+                quantity: { type: "number", description: "Quantity for bulk calculations" },
+                additionalCosts: {
+                    type: "object",
+                    properties: {
+                        shipping: { type: "number" },
+                        packaging: { type: "number" },
+                        marketing: { type: "number" },
+                        overhead: { type: "number" }
+                    },
+                    description: "Additional costs per unit"
+                }
+            },
+            required: ["productName", "costPrice"],
+        }
+    },
+    btw_calculator: {
+        name: "btw_calculator",
+        description: "Calculates Dutch VAT (BTW) amounts. Supports adding VAT to net amounts or extracting VAT from gross amounts. Free tool.",
+        endpoint: "/finance/btw-calculator",
+        inputSchema: {
+            type: "object",
+            properties: {
+                amount: { type: "number", description: "The amount to calculate VAT for" },
+                vatRate: { type: "string", enum: ["9", "21"], description: "VAT rate: 9% (low) or 21% (standard)" },
+                calculationType: { type: "string", enum: ["addVat", "removeVat"], description: "addVat: net→gross, removeVat: gross→net" },
+                amounts: { type: "array", items: { type: "number" }, description: "Optional: batch calculate multiple amounts" }
+            },
+            required: ["amount"],
+        }
+    },
+    salary_calculator: {
+        name: "salary_calculator",
+        description: "Calculates Dutch net salary from gross salary with official 2024/2025 tax rates. Includes arbeidskorting, algemene heffingskorting, 30% ruling, company car taxation, and more. Free tool.",
+        endpoint: "/hr/salary-calculator",
+        inputSchema: {
+            type: "object",
+            properties: {
+                grossSalary: { type: "number", description: "Gross salary amount" },
+                period: { type: "string", enum: ["monthly", "yearly"], description: "Salary period (default: monthly)" },
+                taxYear: { type: "string", enum: ["2024", "2025"], description: "Tax year for calculations (default: 2025)" },
+                partTimePercentage: { type: "number", description: "Part-time percentage 1-100 (default: 100)" },
+                holidayAllowanceIncluded: { type: "boolean", description: "Whether holiday allowance (8%) is included in gross salary" },
+                thirteenthMonth: { type: "boolean", description: "Whether 13th month is included in gross salary" },
+                pensionContributionEmployee: { type: "number", description: "Employee pension contribution percentage (0-30)" },
+                pensionContributionEmployer: { type: "number", description: "Employer pension contribution percentage (0-30)" },
+                ruling30Percent: { type: "boolean", description: "Apply 30% ruling for expats" },
+                under30WithMasters: { type: "boolean", description: "Under 30 with masters degree (affects 30% ruling threshold)" },
+                companyCar: {
+                    type: "object",
+                    properties: {
+                        catalogValue: { type: "number", description: "Catalog value of the car" },
+                        isElectric: { type: "boolean", description: "Is the car electric" },
+                        isHydrogen: { type: "boolean", description: "Is the car hydrogen powered" }
+                    },
+                    description: "Company car details for bijtelling calculation"
+                },
+                commuteDistance: { type: "number", description: "One-way commute distance in km for travel allowance" },
+                calculationMode: { type: "string", enum: ["gross-to-net", "net-to-gross"], description: "Calculation direction (default: gross-to-net)" }
+            },
+            required: ["grossSalary"],
+        }
     }
 };
 
 /**
  * Retry helper for transient network errors
  */
-async function axiosWithRetry(url: string, data: any, retries = 3, backoff = 1000) {
+async function axiosWithRetry(url: string, data: Record<string, unknown>, retries = 3, backoff = 1000) {
     for (let i = 0; i < retries; i++) {
         try {
             return await axios.post(url, data, { validateStatus: () => true });
-        } catch (error: any) {
-            const isTransient = !error.response || (error.response.status >= 500);
+        } catch (error: unknown) {
+            const axiosError = error as { response?: { status: number } };
+            const isTransient = !axiosError.response || (axiosError.response.status >= 500);
             if (i === retries - 1 || !isTransient) throw error;
 
             const delay = backoff * Math.pow(2, i);
@@ -250,7 +327,7 @@ async function axiosWithRetry(url: string, data: any, retries = 3, backoff = 100
 const server = new Server(
     {
         name: "aifais-mcp-server",
-        version: "1.3.0",
+        version: "1.4.0",
     },
     {
         capabilities: {
@@ -289,7 +366,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     try {
         const url = `${BASE_URL}${tool.endpoint}`;
-        const response = await axiosWithRetry(url, args);
+        const response = await axiosWithRetry(url, (args ?? {}) as Record<string, unknown>);
 
         log.debug(`API Response Status: ${response.status}`);
 
@@ -333,14 +410,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             ],
         };
 
-    } catch (error: any) {
-        log.error("Connection error", error.message);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        log.error("Connection error", errorMessage);
         return {
             isError: true,
             content: [
                 {
                     type: "text",
-                    text: `Network/Connection Error: ${error.message}. Please check if the AIFAIS API is reachable at ${BASE_URL}.`,
+                    text: `Network/Connection Error: ${errorMessage}. Please check if the AIFAIS API is reachable at ${BASE_URL}.`,
                 },
             ],
         };
@@ -353,7 +431,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    log.info(`AIFAIS MCP Server v1.3.0 running on stdio (Base API: ${BASE_URL})`);
+    log.info(`AIFAIS MCP Server v1.4.0 running on stdio (Base API: ${BASE_URL})`);
 }
 
 main().catch((error) => {
